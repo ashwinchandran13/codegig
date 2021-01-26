@@ -16,17 +16,46 @@ router.get('/', (req, res) =>
 router.get('/add', (req, res)=> res.render('add'));
 // Add a gig
 router.post('/add', (req, res) => {
-    const data = {
-        title: 'Simple wordpress website',
-        technologies: 'wordpress, php, html, css',
-        budget: '$3000',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas eu scelerisque nulla. Integer mattis pulvinar ligula vel semper. Nullam dictum eros orci, quis vulputate nulla fringilla non. Curabitur et lorem non nulla viverra sodales. Etiam bibendum ex condimentum mi ornare, et tincidunt nulla aliquam. Interdum et malesuada fames ac ante ipsum primis in faucibus',
-        contact_email: 'user2@gmail.com'
+    
+
+    let { title, technologies, budget, description,contact_email } = req.body;
+    let errors = [];
+
+    // Validate Fields
+    if (!title) {
+        errors.push({ text: 'Please add a title' });
+    }
+    if (!technologies) {
+        errors.push({ text: 'Please add some technologies' });
+    }
+    if (!description) {
+        errors.push({ text: 'Please add a description' });
+    }
+    if (!contact_email) {
+        errors.push({ text: 'Please add a contact email' });
     }
 
-    let { title, technologies, budget, description,contact_email } = data;
+    // Check for errors
+    if (errors.length > 0) {
+        res.render('add', {
+            errors,
+            title, 
+            technologies, 
+            budget, 
+            description,
+            contact_email
+        })
+    } else {
+        if (!budget) {
+            budget = 'Unknown';
+        } else {
+            budget = `$${budget}`;
+        }
+        
+        // Make Lower case and remove space after comma
+        technologies = technologies.toLowerCase().replace(/, /g, ',');
 
-    // Insert into table
+        // Insert into table
     Gig.create({
         title,
         technologies,
@@ -36,6 +65,8 @@ router.post('/add', (req, res) => {
     })
     .then(gig => res.redirect('/gigs'))
     .catch(err => console.log(err));
-
+    }
+    
+    
 });
 module.exports = router;
